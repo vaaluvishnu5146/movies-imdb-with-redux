@@ -5,15 +5,15 @@ import { useState } from 'react'
 import { getDesiredMovieService } from '../service/movie'
 import MovieCard from '../Components/MovieCard'
 import nodata from "../assets/nodata.webp";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
+import { connect } from 'react-redux';
+import { MOVIE_ACTION_TYPES, saveMovies } from '../actions/movies.actions';
 
-function Home() {
+function Home({ error = null, movies  = {}, saveAllMovies = () => {}, fetchMoviesError = () => {} }) {
   const navigator = useNavigate();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
   const [page, setPage] = useState(1);
-  const [movies, setMovies] = useState([]);
-  const [, setError] = useState({})
 
   function onChange(e) {
     if(e) {
@@ -38,11 +38,9 @@ function Home() {
       getDesiredMovieService(search, type, page)
       .then((data) => {
         if(data[0]) {
-          setMovies(data[0]);
-          setError("");
+          saveAllMovies(MOVIE_ACTION_TYPES.SAVE_ALL_MOVIES, data[0]); // action creator
         } else {
-          setMovies([]);
-          setError(data[1]);
+          fetchMoviesError(MOVIE_ACTION_TYPES.FETCH_MOVIE_ERROR, data[1]);
         }
       });
     } else {
@@ -82,4 +80,26 @@ function Home() {
   )
 }
 
-export default Home
+const mapStateToProps = (state = {}) => {
+  return {
+      movies: state.movies.data || [],
+      error: state.error,
+      todos: state.todos.data || [],
+  };  
+};
+
+const mapDispatchToProps = (dispatcher) => {
+  return {
+      saveAllMovies: (type, payload) => dispatcher(saveMovies(type, payload)),
+      fetchMoviesError: (type, payload) => dispatcher({type, payload}),
+  };
+};
+
+Home.propTypes = {
+    error: String,
+    movies: Array,
+    saveAllMovies: Function,
+    fetchMoviesError: Function
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

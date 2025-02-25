@@ -1,4 +1,4 @@
-const apiKey = "";
+const apiKey = "bc827b2a";
 
 export async function getMovieById(movieId) {
     const URi = `http://www.omdbapi.com/?i=${movieId}&apikey=${apiKey}`;
